@@ -18,10 +18,14 @@ const Login = () => {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    let result = await axios.post("/login", user);
-    console.log(result.data);
-    if (result.data) {
-      navigate("/dashboard");
+    try {
+      let result = await axios.post("/login", user);
+      console.log(result.data);
+      if (result.data) {
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 

@@ -17,20 +17,28 @@ router.use((req, res, next) => {
 // Verify user credentials and sign JWT -> httponly cookie
 router.post("/login", async (req, res) => {
   let { username, password } = req.body;
+  let userID = null;
   try {
     let foundUser = await User.findOne({ username });
-    const userID = foundUser._id;
-    let authenticated = await bcrypt.compare(password, foundUser.password);
-    if (authenticated) {
-      let token = jwt.sign({ userID: userID }, process.env.JWT_SECRET);
-      res.cookie("secureCookie", JSON.stringify(token), {
-        secure: process.env.NODE_ENV !== "development",
-        httpOnly: true,
-      });
+    console.log(foundUser);
+    if (foundUser) {
+      userID = foundUser._id;
+      let authenticated = await bcrypt.compare(password, foundUser.password);
+      if (authenticated) {
+        let token = jwt.sign({ userID: userID }, process.env.JWT_SECRET);
+        res.cookie("secureCookie", JSON.stringify(token), {
+          secure: process.env.NODE_ENV !== "development",
+          httpOnly: true,
+        });
+        res.send(authenticated);
+      } else {
+        console.log("wrong pw");
+        res.status(401).send("Not authenticated.");
+      }
     } else {
-      res.status(401).send("Not Authenticated");
+      console.log("User not found.");
+      res.status(401).send("User not found.");
     }
-    res.send(authenticated);
   } catch (error) {
     res.send("Login error:" + error);
   }
